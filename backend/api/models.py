@@ -43,8 +43,8 @@ class Employee(models.Model):
     ]
     
     # Basic Information
-    emp_no = models.CharField(max_length=20, unique=True, verbose_name="Employee Number")
-    name = models.CharField(max_length=100, verbose_name="Full Name")
+    emp_no = models.CharField(max_length=100, unique=True, verbose_name="Employee Number")
+    name = models.CharField(max_length=255, verbose_name="Full Name")
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES, verbose_name="Gender")
     dob = models.DateField(verbose_name="Date of Birth")
     age = models.IntegerField(verbose_name="Age")
@@ -53,33 +53,26 @@ class Employee(models.Model):
     photo = models.ImageField(upload_to='employee_photos/', null=True, blank=True, verbose_name="Employee Photo")
     
     # Work Details
-    plant = models.CharField(max_length=50, choices=PLANT_CHOICES, verbose_name="Plant")
-    area_of_work = models.CharField(max_length=100, verbose_name="Area of Work")
-    dept = models.CharField(max_length=50, choices=DEPT_CHOICES, verbose_name="Department")
-    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, verbose_name="Category")
-    batch_no = models.CharField(max_length=20, blank=True, verbose_name="Batch Number")
+    plant = models.CharField(max_length=100, choices=PLANT_CHOICES, verbose_name="Plant")
+    area_of_work = models.CharField(max_length=255, verbose_name="Area of Work")
+    dept = models.CharField(max_length=100, choices=DEPT_CHOICES, verbose_name="Department")
+    category = models.CharField(max_length=100, choices=CATEGORY_CHOICES, verbose_name="Category")
+    batch_no = models.CharField(max_length=100, blank=True, null=True, verbose_name="Batch Number")
     
     # Training Details
     training_days = models.IntegerField(default=0, verbose_name="Number of Training Days")
-    sl1_marks = models.IntegerField(null=True, blank=True, verbose_name="SL1 Marks")
-    sl2_marks = models.IntegerField(null=True, blank=True, verbose_name="SL2 Marks")
-    sl2_ojt = models.CharField(max_length=50, blank=True, verbose_name="SL2 OJT Status")
-    after_ojt_dept = models.CharField(max_length=50, blank=True, verbose_name="Department After OJT")
-    overall_percent = models.DecimalField(
-        max_digits=5, 
-        decimal_places=2, 
-        null=True, 
-        blank=True, 
-        verbose_name="Overall Percentage",
-        validators=[MinValueValidator(0), MaxValueValidator(100)]
-    )
-    skill_level = models.CharField(max_length=20, choices=SKILL_LEVEL_CHOICES, default='beginner', verbose_name="Skill Level")
-    remarks = models.TextField(blank=True, verbose_name="Remarks")
+    sl1_marks = models.IntegerField(default=0, verbose_name="SL1 Marks")
+    sl2_marks = models.IntegerField(default=0, verbose_name="SL2 Marks")
+    sl2_ojt = models.CharField(max_length=255, blank=True, null=True, verbose_name="SL2 OJT Status")
+    after_ojt_dept = models.CharField(max_length=255, blank=True, null=True, verbose_name="Department After OJT")
+    overall_percent = models.FloatField(default=0, verbose_name="Overall Percentage")
+    skill_level = models.CharField(max_length=100, choices=SKILL_LEVEL_CHOICES, default='beginner', verbose_name="Skill Level")
+    remarks = models.TextField(blank=True, null=True, verbose_name="Remarks")
     
     # SL Assessment
-    sl1_status = models.CharField(max_length=10, choices=SL_STATUS_CHOICES, default='pending', verbose_name="SL1 Status")
-    sl2_status = models.CharField(max_length=10, choices=SL_STATUS_CHOICES, default='pending', verbose_name="SL2 Status")
-    sl3_status = models.CharField(max_length=10, choices=SL_STATUS_CHOICES, default='pending', verbose_name="SL3 Status")
+    sl1_status = models.CharField(max_length=50, blank=True, null=True, choices=SL_STATUS_CHOICES, verbose_name="SL1 Status")
+    sl2_status = models.CharField(max_length=50, blank=True, null=True, choices=SL_STATUS_CHOICES, verbose_name="SL2 Status")
+    sl3_status = models.CharField(max_length=50, blank=True, null=True, choices=SL_STATUS_CHOICES, verbose_name="SL3 Status")
     
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)

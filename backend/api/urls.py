@@ -13,4 +13,5 @@ router.register(r'performance-records', views.PerformanceRecordViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('employee_search/', views.employee_search, name='employee_search'),
 ] 

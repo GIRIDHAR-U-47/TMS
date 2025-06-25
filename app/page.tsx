@@ -176,9 +176,83 @@ export default function TrainingDashboard() {
     trainingModules.reduce((acc, module) => ({ ...acc, [module.title]: "pending" }), {}) as Record<string, string>,
   )
   const [showPerformanceRecord, setShowPerformanceRecord] = useState(false)
+  const [error, setError] = useState("")
+  const [form, setForm] = useState({
+    emp_no: "",
+    name: "",
+    gender: "",
+    dob: "",
+    age: "",
+    doj: "",
+    dol: "",
+    plant: "",
+    area_of_work: "",
+    dept: "",
+    category: "",
+    batch_no: "",
+    training_days: "",
+    sl1_marks: "",
+    sl2_marks: "",
+    sl2_ojt: "",
+    after_ojt_dept: "",
+    overall_percent: "",
+    skill_level: "",
+    remarks: "",
+  })
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
+
+  const requiredFields = [
+    "emp_no",
+    "name",
+    "gender",
+    "dob",
+    "doj",
+    "plant",
+    "area_of_work",
+    "dept",
+    "category",
+  ]
+
+  const validateForm = () => {
+    const errors: Record<string, string> = {}
+    requiredFields.forEach((field) => {
+      if (!form[field]) {
+        errors[field] = "This field is required"
+      }
+    })
+    return errors
+  }
+
+  const handleFormChange = (field: string, value: string) => {
+    setForm((prev) => ({ ...prev, [field]: value }))
+    setFormErrors((prev) => ({ ...prev, [field]: "" }))
+  }
+
+  const handleSaveEmployee = async (isEdit: boolean) => {
+    const errors = validateForm()
+    setFormErrors(errors)
+    if (Object.keys(errors).length > 0) {
+      return
+    }
+    try {
+      if (isEdit && searchResult) {
+        await updateEmployee(searchResult.id, form)
+        setError("")
+      } else {
+        await addEmployee(form)
+        setError("")
+      }
+      setAddEmployeeOpen(false)
+      setEditEmployeeOpen(false)
+      setSearchResult(null)
+    } catch (err: any) {
+      setError(err.message)
+    }
+  }
 
   const handleSearch = async () => {
     try {
+      console.log("Searching for EMP NO:", searchEmpNo);
       const result = await searchEmployee(searchEmpNo);
       console.log("Search result:", result);
       setSearchResult(result);
@@ -248,15 +322,17 @@ export default function TrainingDashboard() {
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <Label htmlFor="empNo">EMP NO *</Label>
-            <Input id="empNo" placeholder="Enter employee number" defaultValue={isEdit ? searchResult?.emp_no || "" : ""} />
+            <Input id="empNo" placeholder="Enter employee number" value={form.emp_no} onChange={e => handleFormChange('emp_no', e.target.value)} />
+            {formErrors.emp_no && <span className="text-red-500 text-xs">{formErrors.emp_no}</span>}
           </div>
           <div>
             <Label htmlFor="name">NAME *</Label>
-            <Input id="name" placeholder="Enter full name" defaultValue={isEdit ? searchResult?.name : ""} />
+            <Input id="name" placeholder="Enter full name" value={form.name} onChange={e => handleFormChange('name', e.target.value)} />
+            {formErrors.name && <span className="text-red-500 text-xs">{formErrors.name}</span>}
           </div>
           <div>
             <Label htmlFor="gender">GENDER *</Label>
-            <Select defaultValue={isEdit ? searchResult?.gender?.toLowerCase() : ""}>
+            <Select value={form.gender} onValueChange={val => handleFormChange('gender', val)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select gender" />
               </SelectTrigger>
@@ -266,22 +342,25 @@ export default function TrainingDashboard() {
                 <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
+            {formErrors.gender && <span className="text-red-500 text-xs">{formErrors.gender}</span>}
           </div>
           <div>
             <Label htmlFor="dob">DOB *</Label>
-            <Input id="dob" type="date" defaultValue={isEdit ? searchResult?.dob : ""} />
+            <Input id="dob" type="date" value={form.dob} onChange={e => handleFormChange('dob', e.target.value)} />
+            {formErrors.dob && <span className="text-red-500 text-xs">{formErrors.dob}</span>}
           </div>
           <div>
             <Label htmlFor="age">AGE</Label>
-            <Input id="age" type="number" placeholder="Age" defaultValue={isEdit ? searchResult?.age : ""} />
+            <Input id="age" type="number" placeholder="Age" value={form.age} onChange={e => handleFormChange('age', e.target.value)} />
           </div>
           <div>
             <Label htmlFor="doj">DOJ *</Label>
-            <Input id="doj" type="date" defaultValue={isEdit ? searchResult?.doj : ""} />
+            <Input id="doj" type="date" value={form.doj} onChange={e => handleFormChange('doj', e.target.value)} />
+            {formErrors.doj && <span className="text-red-500 text-xs">{formErrors.doj}</span>}
           </div>
           <div>
             <Label htmlFor="dol">DOL</Label>
-            <Input id="dol" type="date" defaultValue={isEdit ? searchResult?.dol ?? "" : ""} />
+            <Input id="dol" type="date" value={form.dol} onChange={e => handleFormChange('dol', e.target.value)} />
           </div>
         </CardContent>
       </Card>
@@ -342,7 +421,7 @@ export default function TrainingDashboard() {
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <Label htmlFor="plant">PLANT *</Label>
-            <Select defaultValue={isEdit ? searchResult?.plant?.toLowerCase().replace(" ", "-") : ""}>
+            <Select value={form.plant} onValueChange={val => handleFormChange('plant', val)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select plant" />
               </SelectTrigger>
@@ -352,18 +431,16 @@ export default function TrainingDashboard() {
                 <SelectItem value="plant-c">Plant C</SelectItem>
               </SelectContent>
             </Select>
+            {formErrors.plant && <span className="text-red-500 text-xs">{formErrors.plant}</span>}
           </div>
           <div>
             <Label htmlFor="areaOfWork">AREA OF WORK *</Label>
-            <Input
-              id="areaOfWork"
-              placeholder="Enter area of work"
-              defaultValue={isEdit ? searchResult?.area_of_work : ""}
-            />
+            <Input id="areaOfWork" placeholder="Enter area of work" value={form.area_of_work} onChange={e => handleFormChange('area_of_work', e.target.value)} />
+            {formErrors.area_of_work && <span className="text-red-500 text-xs">{formErrors.area_of_work}</span>}
           </div>
           <div>
             <Label htmlFor="dept">DEPT *</Label>
-            <Select defaultValue={isEdit ? searchResult?.dept?.toLowerCase() : ""}>
+            <Select value={form.dept} onValueChange={val => handleFormChange('dept', val)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select department" />
               </SelectTrigger>
@@ -374,10 +451,11 @@ export default function TrainingDashboard() {
                 <SelectItem value="logistics">Logistics</SelectItem>
               </SelectContent>
             </Select>
+            {formErrors.dept && <span className="text-red-500 text-xs">{formErrors.dept}</span>}
           </div>
           <div>
             <Label htmlFor="category">CATEGORY *</Label>
-            <Select defaultValue={isEdit ? searchResult?.category?.toLowerCase() : ""}>
+            <Select value={form.category} onValueChange={val => handleFormChange('category', val)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
@@ -388,10 +466,11 @@ export default function TrainingDashboard() {
                 <SelectItem value="engineer">Engineer</SelectItem>
               </SelectContent>
             </Select>
+            {formErrors.category && <span className="text-red-500 text-xs">{formErrors.category}</span>}
           </div>
           <div>
             <Label htmlFor="batchNo">BATCH NO</Label>
-            <Input id="batchNo" placeholder="Enter batch number" defaultValue={isEdit ? (searchResult?.batch_no ?? '') : ''} />
+            <Input id="batchNo" placeholder="Enter batch number" value={form.batch_no} onChange={e => handleFormChange('batch_no', e.target.value)} />
           </div>
         </CardContent>
       </Card>
@@ -845,7 +924,9 @@ export default function TrainingDashboard() {
         <Button variant="outline" onClick={onClose}>
           Cancel
         </Button>
-        <Button className="bg-blue-600 hover:bg-blue-700">{isEdit ? "Update Employee" : "Save Employee"}</Button>
+        <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => handleSaveEmployee(isEdit)}>
+          {isEdit ? "Update Employee" : "Save Employee"}
+        </Button>
       </div>
     </div>
   )
@@ -1147,6 +1228,8 @@ export default function TrainingDashboard() {
           </div>
         )}
       </main>
+
+      {error && <div className="text-red-500">{error}</div>}
     </div>
   )
 }

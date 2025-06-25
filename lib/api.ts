@@ -1,5 +1,6 @@
 const API_BASE_URL = 'http://127.0.0.1:8000/';
 
+
 // Helper function to get CSRF token from cookies
 function getCookie(name: string) {
   let cookieValue = null;
@@ -17,29 +18,13 @@ function getCookie(name: string) {
 }
 
 export const searchEmployee = async (empNo: string) => {
-  try {
-    // First find the employee by emp_no
-    const searchResponse = await fetch(`${API_BASE_URL}employees/?emp_no=${empNo}&format=json`);
-    if (!searchResponse.ok) {
-      throw new Error('Failed to search employee');
-    }
-    const searchData = await searchResponse.json();
-    if (!searchData.length) {
-      throw new Error('Employee not found');
-    }
-
-    // Then get the detailed data
-    const employeeId = searchData[0].id;
-    const detailResponse = await fetch(`${API_BASE_URL}/employees/${employeeId}/detail/`);
-    if (!detailResponse.ok) {
-      throw new Error('Failed to get employee details');
-    }
-
-    return detailResponse.json();
-  } catch (error) {
-    console.error('Error searching employee:', error);
-    throw error;
+  const searchResponse = await fetch(`${API_BASE_URL}employee_search/?emp_no=${empNo}`);
+  const result = await searchResponse.json();
+  if (!searchResponse.ok) {
+    throw new Error(result.error || 'Unknown error');
   }
+  console.log("Search result:", result);
+  return result;
 };
 
 export const addEmployee = async (employeeData: any) => {
