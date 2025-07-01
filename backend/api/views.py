@@ -26,10 +26,16 @@ class EmployeeViewSet(viewsets.ModelViewSet):
     serializer_class = EmployeeSerializer
     permission_classes = [AllowAny]  # Change to IsAuthenticated in production
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['emp_no', 'dept', 'plant', 'category', 'skill_level', 'gender']
+    filterset_fields = ['emp_no', 'area_of_work', 'plant', 'category', 'skill_level', 'gender']
     search_fields = ['emp_no', 'name', 'batch_no']
     ordering_fields = ['created_at', 'name', 'emp_no', 'overall_percent']
     ordering = ['-created_at']
+
+    def get_serializer_context(self):
+        """Add request to serializer context for building absolute URLs"""
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -39,6 +45,49 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         elif self.action in ['create', 'update', 'partial_update']:
             return EmployeeCreateUpdateSerializer
         return EmployeeSerializer
+
+    def create(self, request, *args, **kwargs):
+        """Override create method to support batch creation and add debugging"""
+        print("=== CREATE EMPLOYEE DEBUG ===")
+        print("Request data:", request.data)
+        print("Request FILES:", request.FILES)
+        print("Content type:", request.content_type)
+
+        is_many = isinstance(request.data, list)
+        serializer = self.get_serializer(data=request.data, many=is_many)
+        if not serializer.is_valid():
+            print("Validation errors:", serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        print("Validated data:", serializer.validated_data)
+
+        employees = serializer.save()
+        # If batch, return list; if single, wrap in list for consistent handling
+        if is_many:
+            response_serializer = EmployeeDetailSerializer(employees, many=True, context={'request': request})
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            response_serializer = EmployeeDetailSerializer(employees, context={'request': request})
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        """Override update method to add debugging"""
+        print("=== UPDATE EMPLOYEE DEBUG ===")
+        print("Request data:", request.data)
+        print("Request FILES:", request.FILES)
+        
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        if not serializer.is_valid():
+            print("Validation errors:", serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        print("Validated data:", serializer.validated_data)
+        
+        employee = serializer.save()
+        response_serializer = EmployeeDetailSerializer(employee, context={'request': request})
+        return Response(response_serializer.data)
 
     @action(detail=True, methods=['get'])
     def detail(self, request, pk=None):
@@ -60,8 +109,8 @@ class EmployeeViewSet(viewsets.ModelViewSet):
             if serializer.validated_data.get('name'):
                 filters &= Q(name__icontains=serializer.validated_data['name'])
             
-            if serializer.validated_data.get('dept'):
-                filters &= Q(dept__icontains=serializer.validated_data['dept'])
+            if serializer.validated_data.get('area_of_work'):
+                filters &= Q(area_of_work__icontains=serializer.validated_data['area_of_work'])
             
             if serializer.validated_data.get('plant'):
                 filters &= Q(plant__icontains=serializer.validated_data['plant'])
@@ -80,38 +129,6 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=False, methods=['get'])
-    def stats(self, request):
-        """Get employee statistics"""
-        total_employees = Employee.objects.count()
-        
-        employees_by_dept = Employee.objects.values('dept').annotate(
-            count=Count('id')
-        ).order_by('-count')
-        
-        employees_by_skill_level = Employee.objects.values('skill_level').annotate(
-            count=Count('id')
-        ).order_by('-count')
-        
-        employees_by_plant = Employee.objects.values('plant').annotate(
-            count=Count('id')
-        ).order_by('-count')
-        
-        recent_additions = Employee.objects.filter(
-            created_at__gte=timezone.now() - timedelta(days=30)
-        ).values('id', 'name', 'emp_no', 'created_at')[:10]
-        
-        stats_data = {
-            'total_employees': total_employees,
-            'employees_by_dept': {item['dept']: item['count'] for item in employees_by_dept},
-            'employees_by_skill_level': {item['skill_level']: item['count'] for item in employees_by_skill_level},
-            'employees_by_plant': {item['plant']: item['count'] for item in employees_by_plant},
-            'recent_additions': list(recent_additions),
-        }
-        
-        serializer = EmployeeStatsSerializer(stats_data)
-        return Response(serializer.data)
-
     @action(detail=True, methods=['post'])
     def update_training_modules(self, request, pk=None):
         """Update training module statuses for an employee"""
@@ -123,6 +140,9 @@ class EmployeeViewSet(viewsets.ModelViewSet):
                 module_id = update['module_id']
                 status = update['status']
                 completed_date = update.get('completed_date')
+                # If status is accepted and completed_date is not provided, set to today
+                if status == 'accepted' and not completed_date:
+                    completed_date = timezone.now().date()
                 
                 employee_module, created = EmployeeTrainingModule.objects.get_or_create(
                     employee=employee,
@@ -139,6 +159,50 @@ class EmployeeViewSet(viewsets.ModelViewSet):
             return Response({'message': 'Training modules updated successfully'})
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['post'])
+    def upload_photo(self, request, pk=None):
+        """Upload photo for an employee"""
+        employee = self.get_object()
+        
+        if 'photo' not in request.FILES:
+            return Response({'error': 'No photo file provided'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        photo_file = request.FILES['photo']
+        
+        # Validate file type
+        if not photo_file.content_type.startswith('image/'):
+            return Response({'error': 'File must be an image'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Validate file size (max 5MB)
+        if photo_file.size > 5 * 1024 * 1024:
+            return Response({'error': 'File size must be less than 5MB'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Save the photo
+        employee.photo = photo_file
+        employee.save()
+        
+        serializer = EmployeeDetailSerializer(employee, context={'request': request})
+        return Response({
+            'message': 'Photo uploaded successfully',
+            'employee': serializer.data
+        })
+
+    @action(detail=False, methods=['get'])
+    def stats(self, request):
+        """Get employee statistics"""
+        total_employees = Employee.objects.count()
+        employees_by_area_of_work = Employee.objects.values('area_of_work').annotate(count=Count('id'))
+        employees_by_skill = Employee.objects.values('skill_level').annotate(count=Count('id'))
+        
+        data = {
+            'total_employees': total_employees,
+            'by_area_of_work': list(employees_by_area_of_work),
+            'by_skill_level': list(employees_by_skill),
+        }
+        
+        serializer = EmployeeStatsSerializer(data)
+        return Response(serializer.data)
 
 
 class TrainingModuleViewSet(viewsets.ModelViewSet):
@@ -214,7 +278,47 @@ def employee_search(request):
         return Response({'error': 'emp_no parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
     try:
         employee = Employee.objects.get(emp_no=emp_no)
-        serializer = EmployeeDetailSerializer(employee)
+        serializer = EmployeeDetailSerializer(employee, context={'request': request})
         return Response(serializer.data)
     except Employee.DoesNotExist:
         return Response({'error': 'Employee not found'}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+def test_employee_create(request):
+    """Test endpoint to debug employee creation"""
+    print("=== TEST EMPLOYEE CREATE ===")
+    print("Request data:", request.data)
+    print("Request FILES:", request.FILES)
+    print("Content type:", request.content_type)
+    
+    # Try to create a simple employee with minimal data
+    test_data = {
+        'emp_no': 'TEST001',
+        'name': 'Test Employee',
+        'gender': 'male',
+        'dob': '1990-01-01',
+        'age': 33,
+        'doj': '2023-01-01',
+        'plant': 'plant-a',
+        'area_of_work': 'special_painter',
+        'category': 'operator',
+        'training_days': 0,
+        'sl1_marks': 0,
+        'sl2_marks': 0,
+        'overall_percent': 0.0,
+        'skill_level': 'beginner',
+        'sl1_status': 'pending',
+        'sl2_status': 'pending',
+        'sl3_status': 'pending',
+    }
+    
+    serializer = EmployeeCreateUpdateSerializer(data=test_data, context={'request': request})
+    if serializer.is_valid():
+        employee = serializer.save()
+        return Response({'message': 'Test employee created successfully', 'id': employee.id})
+    else:
+        print("Validation errors:", serializer.errors)
+        return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+def home(request):
+    return render(request, 'home.html')

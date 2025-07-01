@@ -33,12 +33,31 @@ export interface OJTRecord {
 
 export interface DexterityAssessment {
   id: number
-  test_name: string
-  criteria: string
-  average: number
-  score: number | null
-  type: 'basic' | 'advanced'
-  overall_score: number
+  employee: number
+  test_1s_2s: number | null
+  test_1s_2s_ball: number | null
+  memory_test: number | null
+  mind_hand_coordination: number | null
+  nerve_stability: number | null
+  material_identification: number | null
+  pick_place_sequence: number | null
+  pick_right_material: number | null
+  visual_inspection: number | null
+  defect_identification: number | null
+  written_test: number | null
+  basic_skills_total: number | null
+  insert_loading_1: number | null
+  insert_loading_2: number | null
+  safety_test: number | null
+  painting: number | null
+  screw_assembly: number | null
+  air_cleaner_assembly: number | null
+  msa_test: number | null
+  deflashing: number | null
+  advanced_skills_total: number | null
+  overall_score: number | null
+  created_at: string
+  updated_at: string
 }
 
 export interface PerformanceScores {

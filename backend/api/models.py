@@ -10,10 +10,10 @@ class Employee(models.Model):
     ]
     
     SKILL_LEVEL_CHOICES = [
-        ('beginner', 'Beginner'),
-        ('intermediate', 'Intermediate'),
-        ('advanced', 'Advanced'),
-        ('expert', 'Expert'),
+        ('sl0', 'SL 0'),
+        ('sl1', 'SL 1'),
+        ('sl2', 'SL 2'),
+        ('sl3', 'SL 3'),
     ]
     
     SL_STATUS_CHOICES = [
@@ -26,57 +26,100 @@ class Employee(models.Model):
         ('plant-a', 'Plant A'),
         ('plant-b', 'Plant B'),
         ('plant-c', 'Plant C'),
+        ('central', 'Central'),
     ]
 
-    DEPT_CHOICES = [
-        ('production', 'Production'),
+    AREA_OF_WORK_CHOICES = [
+        ('special_painter', 'Special Painter'),
+        ('standard_room', 'standard room'),
+        ('stores', 'Stores'),
+        ('sub_contract_area', 'Sub contract area'),
+        ('tool_room', 'TOOL ROOM'),
+        ('tqc', 'TQC'),
+        ('tvsm_qre', 'TVSM QRE'),
+        ('unit_1', 'Unit-1'),
+        ('plant_2', 'Plant-2'),
+        ('plant_3', 'Plant-3'),
+        ('product_audit', 'Product audit'),
+        ('purchase', 'Purchase'),
         ('quality', 'Quality'),
+        ('r_and_d', 'R & D'),
+        ('safety', 'SAFETY'),
+        ('sap', 'SAP'),
+        ('security', 'Security'),
+        ('material_loader', 'Material loader'),
+        ('mold_change', 'Mold change'),
+        ('molding', 'Molding'),
+        ('mould_development', 'Mould development'),
+        ('npd', 'NPD'),
+        ('paint_plant', 'Paint Plant'),
+        ('ped', 'PED'),
+        ('personnel', 'Personnel'),
+        ('plant_1', 'Plant-1'),
+        ('despatch', 'Despatch'),
+        ('dock_audit', 'Dock audit'),
+        ('finance', 'Finance'),
+        ('get', 'GET'),
+        ('hrd', 'HRD'),
+        ('incoming_inspection', 'Incoming inspection'),
+        ('line_inspector', 'Line inspector'),
         ('maintenance', 'Maintenance'),
-        ('logistics', 'Logistics'),
+        ('marketing', 'MARKETING'),
+        ('assy', 'Assy'),
+        ('bmw_area', 'BMW Area'),
+        ('bmw_inspection', 'BMW Inspection'),
+        ('bop', 'BOP'),
+        ('civil', 'Civil'),
+        ('cnc_operator', 'CNC Operator'),
+        ('conti_fi', 'Conti FI'),
+        ('data_entry', 'Data entry'),
     ]
 
     CATEGORY_CHOICES = [
-        ('operator', 'Operator'),
-        ('technician', 'Technician'),
-        ('supervisor', 'Supervisor'),
-        ('engineer', 'Engineer'),
+        ('1l', '1L'),
+        ('2l', '2L'),
+        ('3l', '3L'),
+        ('ge', 'GE'),
+        ('sw', 'SW'),
+        ('ta', 'TA'),
     ]
     
     # Basic Information
-    emp_no = models.CharField(max_length=100, unique=True, verbose_name="Employee Number")
-    name = models.CharField(max_length=255, verbose_name="Full Name")
-    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, verbose_name="Gender")
-    dob = models.DateField(verbose_name="Date of Birth")
-    age = models.IntegerField(verbose_name="Age")
-    doj = models.DateField(verbose_name="Date of Joining")
-    dol = models.DateField(null=True, blank=True, verbose_name="Date of Leaving")
+    emp_no = models.CharField(max_length=100, unique=True, verbose_name="Employee Number", null=True, blank=True)
+    name = models.CharField(max_length=255, verbose_name="Full Name", null=True, blank=True)
+    gender = models.CharField(max_length=255, null=True, blank=True)
+    dob = models.CharField(max_length=255, null=True, blank=True)
+    age = models.CharField(max_length=255, null=True, blank=True)
+    doj = models.CharField(max_length=255, null=True, blank=True)
+    dol = models.CharField(max_length=255, null=True, blank=True)
     photo = models.ImageField(upload_to='employee_photos/', null=True, blank=True, verbose_name="Employee Photo")
     
     # Work Details
-    plant = models.CharField(max_length=100, choices=PLANT_CHOICES, verbose_name="Plant")
-    area_of_work = models.CharField(max_length=255, verbose_name="Area of Work")
-    dept = models.CharField(max_length=100, choices=DEPT_CHOICES, verbose_name="Department")
-    category = models.CharField(max_length=100, choices=CATEGORY_CHOICES, verbose_name="Category")
+    plant = models.CharField(max_length=255, null=True, blank=True)
+    area_of_work = models.CharField(max_length=255, null=True, blank=True)
+    dept = models.CharField(max_length=255, null=True, blank=True)
+    category = models.CharField(max_length=255, null=True, blank=True)
     batch_no = models.CharField(max_length=100, blank=True, null=True, verbose_name="Batch Number")
+    supervisor_name = models.CharField(max_length=255, blank=True, null=True, verbose_name="Supervisor Name")
     
     # Training Details
-    training_days = models.IntegerField(default=0, verbose_name="Number of Training Days")
-    sl1_marks = models.IntegerField(default=0, verbose_name="SL1 Marks")
-    sl2_marks = models.IntegerField(default=0, verbose_name="SL2 Marks")
+    training_days = models.CharField(max_length=255, null=True, blank=True)
+    sl1_marks = models.CharField(max_length=255, null=True, blank=True)
+    sl2_marks = models.CharField(max_length=255, null=True, blank=True)
     sl2_ojt = models.CharField(max_length=255, blank=True, null=True, verbose_name="SL2 OJT Status")
-    after_ojt_dept = models.CharField(max_length=255, blank=True, null=True, verbose_name="Department After OJT")
-    overall_percent = models.FloatField(default=0, verbose_name="Overall Percentage")
-    skill_level = models.CharField(max_length=100, choices=SKILL_LEVEL_CHOICES, default='beginner', verbose_name="Skill Level")
+    after_ojt_area_of_work = models.CharField(max_length=255, blank=True, null=True, verbose_name="Area of Work After OJT")
+    overall_percent = models.CharField(max_length=255, null=True, blank=True)
+    skill_level = models.CharField(max_length=255, null=True, blank=True)
     remarks = models.TextField(blank=True, null=True, verbose_name="Remarks")
     
     # SL Assessment
-    sl1_status = models.CharField(max_length=50, blank=True, null=True, choices=SL_STATUS_CHOICES, verbose_name="SL1 Status")
-    sl2_status = models.CharField(max_length=50, blank=True, null=True, choices=SL_STATUS_CHOICES, verbose_name="SL2 Status")
-    sl3_status = models.CharField(max_length=50, blank=True, null=True, choices=SL_STATUS_CHOICES, verbose_name="SL3 Status")
+    sl1_status = models.CharField(max_length=255, null=True, blank=True)
+    sl2_status = models.CharField(max_length=255, null=True, blank=True)
+    sl3_status = models.CharField(max_length=255, null=True, blank=True)
     
     # Timestamps
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.CharField(max_length=255, null=True, blank=True)
+    updated_at = models.CharField(max_length=255, null=True, blank=True)
     
     class Meta:
         verbose_name = "Employee"
@@ -94,7 +137,7 @@ class TrainingModule(models.Model):
         ('denied', 'Denied'),
     ]
     
-    s_no = models.IntegerField(verbose_name="Serial Number")
+    s_no = models.CharField(max_length=255, null=True, blank=True)
     title = models.CharField(max_length=200, verbose_name="Module Title")
     expert = models.CharField(max_length=100, blank=True, verbose_name="Expert")
     
@@ -111,7 +154,7 @@ class EmployeeTrainingModule(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='training_modules')
     module = models.ForeignKey(TrainingModule, on_delete=models.CASCADE)
     status = models.CharField(max_length=10, choices=TrainingModule.STATUS_CHOICES, default='pending')
-    completed_date = models.DateField(null=True, blank=True)
+    completed_date = models.CharField(max_length=255, null=True, blank=True)
     
     class Meta:
         unique_together = ['employee', 'module']
@@ -124,7 +167,7 @@ class EmployeeTrainingModule(models.Model):
 
 class TrainingRecord(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='training_records')
-    date = models.DateField(verbose_name="Training Date")
+    date = models.CharField(max_length=255, verbose_name="Training Date")
     training_program = models.CharField(max_length=200, verbose_name="Training Program")
     duration = models.CharField(max_length=50, verbose_name="Duration")
     
@@ -159,35 +202,35 @@ class DexterityAssessment(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='dexterity_assessments')
     
     # Basic Skills
-    test_1s_2s = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0), MaxValueValidator(5)], verbose_name="1S & 2S test")
-    test_1s_2s_ball = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0), MaxValueValidator(5)], verbose_name="1S & 2S test (Ball)")
-    memory_test = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0), MaxValueValidator(5)], verbose_name="Memory test")
-    mind_hand_coordination = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0), MaxValueValidator(5)], verbose_name="Mind & hand co-ordination")
-    nerve_stability = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0), MaxValueValidator(5)], verbose_name="Nerve stability testing")
-    material_identification = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0), MaxValueValidator(5)], verbose_name="Material identification")
-    pick_place_sequence = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0), MaxValueValidator(10)], verbose_name="Pick & Place material in sequence")
-    pick_right_material = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0), MaxValueValidator(5)], verbose_name="Pick right material with right quantity")
-    visual_inspection = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0), MaxValueValidator(5)], verbose_name="Visual inspection")
-    defect_identification = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0), MaxValueValidator(15)], verbose_name="Defect identification")
-    written_test = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0), MaxValueValidator(20)], verbose_name="Written test")
-    basic_skills_total = models.IntegerField(null=True, blank=True, verbose_name="Basic skill - Total score")
+    test_1s_2s = models.CharField(max_length=255, null=True, blank=True)
+    test_1s_2s_ball = models.CharField(max_length=255, null=True, blank=True)
+    memory_test = models.CharField(max_length=255, null=True, blank=True)
+    mind_hand_coordination = models.CharField(max_length=255, null=True, blank=True)
+    nerve_stability = models.CharField(max_length=255, null=True, blank=True)
+    material_identification = models.CharField(max_length=255, null=True, blank=True)
+    pick_place_sequence = models.CharField(max_length=255, null=True, blank=True)
+    pick_right_material = models.CharField(max_length=255, null=True, blank=True)
+    visual_inspection = models.CharField(max_length=255, null=True, blank=True)
+    defect_identification = models.CharField(max_length=255, null=True, blank=True)
+    written_test = models.CharField(max_length=255, null=True, blank=True)
+    basic_skills_total = models.CharField(max_length=255, null=True, blank=True)
     
     # Advanced Skills
-    insert_loading_1 = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0), MaxValueValidator(10)], verbose_name="Insert loading - 1")
-    insert_loading_2 = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0), MaxValueValidator(10)], verbose_name="Insert loading - 2")
-    safety_test = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0), MaxValueValidator(15)], verbose_name="Safety test")
-    painting = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0), MaxValueValidator(15)], verbose_name="Painting")
-    screw_assembly = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0), MaxValueValidator(10)], verbose_name="Screw assembly")
-    air_cleaner_assembly = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0), MaxValueValidator(10)], verbose_name="Air cleaner assembly")
-    msa_test = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0), MaxValueValidator(15)], verbose_name="MSA TEST")
-    deflashing = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0), MaxValueValidator(15)], verbose_name="Deflashing")
-    advanced_skills_total = models.IntegerField(null=True, blank=True, verbose_name="Advanced skill - Total score")
+    insert_loading_1 = models.CharField(max_length=255, null=True, blank=True)
+    insert_loading_2 = models.CharField(max_length=255, null=True, blank=True)
+    safety_test = models.CharField(max_length=255, null=True, blank=True)
+    painting = models.CharField(max_length=255, null=True, blank=True)
+    screw_assembly = models.CharField(max_length=255, null=True, blank=True)
+    air_cleaner_assembly = models.CharField(max_length=255, null=True, blank=True)
+    msa_test = models.CharField(max_length=255, null=True, blank=True)
+    deflashing = models.CharField(max_length=255, null=True, blank=True)
+    advanced_skills_total = models.CharField(max_length=255, null=True, blank=True)
     
     # Overall Assessment
-    overall_score = models.IntegerField(null=True, blank=True, verbose_name="Overall Score")
+    overall_score = models.CharField(max_length=255, null=True, blank=True)
     
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.CharField(max_length=255, null=True, blank=True)
+    updated_at = models.CharField(max_length=255, null=True, blank=True)
     
     class Meta:
         verbose_name = "Dexterity Assessment"
@@ -199,18 +242,23 @@ class DexterityAssessment(models.Model):
     
     def save(self, *args, **kwargs):
         # Calculate totals
+        def to_number(val):
+            try:
+                return float(val)
+            except (TypeError, ValueError):
+                return 0
         basic_scores = [
             self.test_1s_2s, self.test_1s_2s_ball, self.memory_test, self.mind_hand_coordination,
             self.nerve_stability, self.material_identification, self.pick_place_sequence,
             self.pick_right_material, self.visual_inspection, self.defect_identification, self.written_test
         ]
-        self.basic_skills_total = sum(score for score in basic_scores if score is not None)
+        self.basic_skills_total = sum(to_number(score) for score in basic_scores if score not in (None, ""))
         
         advanced_scores = [
             self.insert_loading_1, self.insert_loading_2, self.safety_test, self.painting,
             self.screw_assembly, self.air_cleaner_assembly, self.msa_test, self.deflashing
         ]
-        self.advanced_skills_total = sum(score for score in advanced_scores if score is not None)
+        self.advanced_skills_total = sum(to_number(score) for score in advanced_scores if score not in (None, ""))
         
         # Calculate overall score
         if self.basic_skills_total is not None and self.advanced_skills_total is not None:
@@ -221,7 +269,7 @@ class DexterityAssessment(models.Model):
 
 class PerformanceRecord(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='performance_records')
-    day = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(31)], verbose_name="Day")
+    day = models.CharField(max_length=255, null=True, blank=True)
     description = models.CharField(max_length=200, blank=True, verbose_name="Description")
     su_status = models.CharField(max_length=10, blank=True, verbose_name="S/U Status")  # S/U
     scope = models.CharField(max_length=100, blank=True, verbose_name="Scope")
@@ -231,14 +279,14 @@ class PerformanceRecord(models.Model):
     quantity = models.CharField(max_length=20, blank=True, verbose_name="Quantity")  # Qty
     pro_n = models.CharField(max_length=20, blank=True, verbose_name="PRO-N")  # PRO-N
     perf_n = models.CharField(max_length=20, blank=True, verbose_name="Perf-N")  # Perf-N
-    final_score = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, verbose_name="Final Score")
+    final_score = models.CharField(max_length=255, null=True, blank=True)
     
     # Approval
     supervisor_approved = models.BooleanField(default=False, verbose_name="Supervisor Approved")
     personnel_certified = models.BooleanField(default=False, verbose_name="Personnel Certified")
     
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.CharField(max_length=255, null=True, blank=True)
+    updated_at = models.CharField(max_length=255, null=True, blank=True)
     
     class Meta:
         unique_together = ['employee', 'day']

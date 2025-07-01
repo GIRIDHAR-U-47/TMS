@@ -142,7 +142,7 @@ curl -X POST http://localhost:8000/api/employees/ \
     "dob": "1995-12-10",
     "age": 28,
     "doj": "2023-01-15",
-    "plant": "Plant A",
+    "plant": "central",
     "area_of_work": "Manufacturing",
     "dept": "Production",
     "category": "Operator",

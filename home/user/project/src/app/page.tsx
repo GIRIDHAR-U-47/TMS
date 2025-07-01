@@ -39,7 +39,7 @@ interface Employee {
   sl1_marks: number;
   sl2_marks: number;
   sl2_ojt: string;
-  after_ojt_dept: string;
+  after_ojt_area_of_work: string;
   overall_percent: number;
   skill_level: string;
   remarks: string;
@@ -193,7 +193,7 @@ export default function TrainingDashboard() {
     sl1_marks: "",
     sl2_marks: "",
     sl2_ojt: "",
-    after_ojt_dept: "",
+    after_ojt_area_of_work: "",
     overall_percent: "",
     skill_level: "",
     remarks: "",
@@ -201,8 +201,9 @@ export default function TrainingDashboard() {
     sl2_status: "",
     sl3_status: "",
     photo: "",
+    supervisor_name: "",
   })
-  const [formErrors, setFormErrors] = useState({})
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
 
   const handleSearch = async () => {
     try {
@@ -240,37 +241,46 @@ export default function TrainingDashboard() {
 
   const handleSaveEmployee = async (isEdit: boolean) => {
     try {
-      const result = isEdit ? await updateEmployee(form) : await addEmployee(form)
+      // Assuming addEmployee and updateEmployee require (form, id?)
+      let result;
+      if (isEdit) {
+        result = await updateEmployee(form.id, form);
+      } else {
+        result = await addEmployee(form);
+      }
       console.log("Employee saved:", result);
       setSearchResult(result);
       setAddEmployeeOpen(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving employee:", error);
+      // Defensive: check if error.response?.data exists
+      const data = error?.response?.data || {};
       setFormErrors({
-        emp_no: error.response?.data?.emp_no,
-        name: error.response?.data?.name,
-        gender: error.response?.data?.gender,
-        dob: error.response?.data?.dob,
-        age: error.response?.data?.age,
-        doj: error.response?.data?.doj,
-        dol: error.response?.data?.dol,
-        plant: error.response?.data?.plant,
-        area_of_work: error.response?.data?.area_of_work,
-        dept: error.response?.data?.dept,
-        category: error.response?.data?.category,
-        batch_no: error.response?.data?.batch_no,
-        training_days: error.response?.data?.training_days,
-        sl1_marks: error.response?.data?.sl1_marks,
-        sl2_marks: error.response?.data?.sl2_marks,
-        sl2_ojt: error.response?.data?.sl2_ojt,
-        after_ojt_dept: error.response?.data?.after_ojt_dept,
-        overall_percent: error.response?.data?.overall_percent,
-        skill_level: error.response?.data?.skill_level,
-        remarks: error.response?.data?.remarks,
-        sl1_status: error.response?.data?.sl1_status,
-        sl2_status: error.response?.data?.sl2_status,
-        sl3_status: error.response?.data?.sl3_status,
-        photo: error.response?.data?.photo,
+        emp_no: data.emp_no || '',
+        name: data.name || '',
+        gender: data.gender || '',
+        dob: data.dob || '',
+        age: data.age || '',
+        doj: data.doj || '',
+        dol: data.dol || '',
+        plant: data.plant || '',
+        area_of_work: data.area_of_work || '',
+        dept: data.dept || '',
+        category: data.category || '',
+        batch_no: data.batch_no || '',
+        training_days: data.training_days || '',
+        sl1_marks: data.sl1_marks || '',
+        sl2_marks: data.sl2_marks || '',
+        sl2_ojt: data.sl2_ojt || '',
+        after_ojt_area_of_work: data.after_ojt_area_of_work || '',
+        overall_percent: data.overall_percent || '',
+        skill_level: data.skill_level || '',
+        remarks: data.remarks || '',
+        sl1_status: data.sl1_status || '',
+        sl2_status: data.sl2_status || '',
+        sl3_status: data.sl3_status || '',
+        photo: data.photo || '',
+        supervisor_name: data.supervisor_name || '',
       });
     }
   }
@@ -357,6 +367,11 @@ export default function TrainingDashboard() {
             <Label htmlFor="dol">DOL</Label>
             <Input id="dol" type="date" value={form.dol} onChange={e => handleFormChange('dol', e.target.value)} />
           </div>
+          <div>
+            <Label htmlFor="supervisorName">SUPERVISOR NAME</Label>
+            <Input id="supervisorName" placeholder="Enter supervisor name" value={form.supervisor_name} onChange={e => handleFormChange('supervisor_name', e.target.value)} />
+            {formErrors.supervisor_name && <span className="text-red-500 text-xs">{formErrors.supervisor_name}</span>}
+          </div>
         </CardContent>
       </Card>
 
@@ -424,6 +439,7 @@ export default function TrainingDashboard() {
                 <SelectItem value="plant-a">Plant A</SelectItem>
                 <SelectItem value="plant-b">Plant B</SelectItem>
                 <SelectItem value="plant-c">Plant C</SelectItem>
+                <SelectItem value="central">Central</SelectItem>
               </SelectContent>
             </Select>
             {formErrors.plant && <span className="text-red-500 text-xs">{formErrors.plant}</span>}
@@ -440,10 +456,49 @@ export default function TrainingDashboard() {
                 <SelectValue placeholder="Select department" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="production">Production</SelectItem>
+                <SelectItem value="special_painter">Special Painter</SelectItem>
+                <SelectItem value="standard_room">standard room</SelectItem>
+                <SelectItem value="stores">Stores</SelectItem>
+                <SelectItem value="sub_contract_area">Sub contract area</SelectItem>
+                <SelectItem value="tool_room">TOOL ROOM</SelectItem>
+                <SelectItem value="tqc">TQC</SelectItem>
+                <SelectItem value="tvsm_qre">TVSM QRE</SelectItem>
+                <SelectItem value="unit_1">Unit-1</SelectItem>
+                <SelectItem value="plant_2">Plant-2</SelectItem>
+                <SelectItem value="plant_3">Plant-3</SelectItem>
+                <SelectItem value="product_audit">Product audit</SelectItem>
+                <SelectItem value="purchase">Purchase</SelectItem>
                 <SelectItem value="quality">Quality</SelectItem>
+                <SelectItem value="r_and_d">R & D</SelectItem>
+                <SelectItem value="safety">SAFETY</SelectItem>
+                <SelectItem value="sap">SAP</SelectItem>
+                <SelectItem value="security">Security</SelectItem>
+                <SelectItem value="material_loader">Material loader</SelectItem>
+                <SelectItem value="mold_change">Mold change</SelectItem>
+                <SelectItem value="molding">Molding</SelectItem>
+                <SelectItem value="mould_development">Mould development</SelectItem>
+                <SelectItem value="npd">NPD</SelectItem>
+                <SelectItem value="paint_plant">Paint Plant</SelectItem>
+                <SelectItem value="ped">PED</SelectItem>
+                <SelectItem value="personnel">Personnel</SelectItem>
+                <SelectItem value="plant_1">Plant-1</SelectItem>
+                <SelectItem value="despatch">Despatch</SelectItem>
+                <SelectItem value="dock_audit">Dock audit</SelectItem>
+                <SelectItem value="finance">Finance</SelectItem>
+                <SelectItem value="get">GET</SelectItem>
+                <SelectItem value="hrd">HRD</SelectItem>
+                <SelectItem value="incoming_inspection">Incoming inspection</SelectItem>
+                <SelectItem value="line_inspector">Line inspector</SelectItem>
                 <SelectItem value="maintenance">Maintenance</SelectItem>
-                <SelectItem value="logistics">Logistics</SelectItem>
+                <SelectItem value="marketing">MARKETING</SelectItem>
+                <SelectItem value="assy">Assy</SelectItem>
+                <SelectItem value="bmw_area">BMW Area</SelectItem>
+                <SelectItem value="bmw_inspection">BMW Inspection</SelectItem>
+                <SelectItem value="bop">BOP</SelectItem>
+                <SelectItem value="civil">Civil</SelectItem>
+                <SelectItem value="cnc_operator">CNC Operator</SelectItem>
+                <SelectItem value="conti_fi">Conti FI</SelectItem>
+                <SelectItem value="data_entry">Data entry</SelectItem>
               </SelectContent>
             </Select>
             {formErrors.dept && <span className="text-red-500 text-xs">{formErrors.dept}</span>}
@@ -455,10 +510,12 @@ export default function TrainingDashboard() {
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="operator">Operator</SelectItem>
-                <SelectItem value="technician">Technician</SelectItem>
-                <SelectItem value="supervisor">Supervisor</SelectItem>
-                <SelectItem value="engineer">Engineer</SelectItem>
+                <SelectItem value="1l">1L</SelectItem>
+                <SelectItem value="2l">2L</SelectItem>
+                <SelectItem value="3l">3L</SelectItem>
+                <SelectItem value="ge">GE</SelectItem>
+                <SelectItem value="sw">SW</SelectItem>
+                <SelectItem value="ta">TA</SelectItem>
               </SelectContent>
             </Select>
             {formErrors.category && <span className="text-red-500 text-xs">{formErrors.category}</span>}
@@ -493,8 +550,8 @@ export default function TrainingDashboard() {
             <Input id="sl2Ojt" placeholder="SL2 OJT status" value={form.sl2_ojt} onChange={e => handleFormChange('sl2_ojt', e.target.value)} />
           </div>
           <div>
-            <Label htmlFor="afterOjtDept">AFTER OJT DEPT</Label>
-            <Input id="afterOjtDept" placeholder="Department after OJT" value={form.after_ojt_dept} onChange={e => handleFormChange('after_ojt_dept', e.target.value)} />
+            <Label htmlFor="afterOjtAreaOfWork">AFTER OJT AREA OF WORK</Label>
+            <Input id="afterOjtAreaOfWork" placeholder="Area of Work after OJT" value={form.after_ojt_area_of_work} onChange={e => handleFormChange('after_ojt_area_of_work', e.target.value)} />
           </div>
           <div>
             <Label htmlFor="overallPercent">OVERALL %</Label>
@@ -507,10 +564,10 @@ export default function TrainingDashboard() {
                 <SelectValue placeholder="Select skill level" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="beginner">Beginner</SelectItem>
-                <SelectItem value="intermediate">Intermediate</SelectItem>
-                <SelectItem value="advanced">Advanced</SelectItem>
-                <SelectItem value="expert">Expert</SelectItem>
+                <SelectItem value="sl0">SL 0</SelectItem>
+                <SelectItem value="sl1">SL 1</SelectItem>
+                <SelectItem value="sl2">SL 2</SelectItem>
+                <SelectItem value="sl3">SL 3</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -911,22 +968,6 @@ export default function TrainingDashboard() {
           </div>
 
           <div className="flex items-center space-x-4">
-            <Dialog open={addEmployeeOpen} onOpenChange={setAddEmployeeOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-blue-600 hover:bg-blue-700">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Employee
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Add New Employee</DialogTitle>
-                  <DialogDescription>Enter employee details and training information</DialogDescription>
-                </DialogHeader>
-                <EmployeeForm isEdit={false} onClose={() => setAddEmployeeOpen(false)} />
-              </DialogContent>
-            </Dialog>
-
             <div className="flex items-center space-x-2">
               <Input
                 placeholder="Enter EMP NO to search"
@@ -960,7 +1001,7 @@ export default function TrainingDashboard() {
                 <div>
                   <h2 className="text-xl font-bold text-gray-900">{searchResult.name}</h2>
                   <p className="text-sm text-gray-500">
-                    EMP NO: {searchResult.emp_no} | {searchResult.dept} - {searchResult.category}
+                    EMP NO: {searchResult.emp_no} | {searchResult.area_of_work} - {searchResult.category}
                   </p>
                 </div>
               </div>
@@ -1182,10 +1223,6 @@ export default function TrainingDashboard() {
               Use the navigation above to add new employees or search existing records
             </p>
             <div className="flex justify-center space-x-4">
-              <Button onClick={() => setAddEmployeeOpen(true)} className="bg-blue-600 hover:bg-blue-700">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Employee
-              </Button>
               <Button variant="outline">
                 <Search className="h-4 w-4 mr-2" />
                 Search Records
