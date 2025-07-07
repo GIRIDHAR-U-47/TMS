@@ -102,6 +102,11 @@ interface Employee {
     air_cleaner_assembly: number | null;
     msa_test: number | null;
     deflashing: number | null;
+    // Add these as optional if backend may provide them
+    advanced_skills_total?: number | null;
+    overall_score?: number | null;
+    created_at?: string;
+    updated_at?: string;
   }>;
   performance_records: Array<{
     id: number;
@@ -254,7 +259,17 @@ const EmployeeForm = React.memo(function EmployeeForm({
       ? [...searchResult.training_records.slice(0, 5).map(tr => ({ id: tr.id, date: tr.date, training_program: tr.training_program, duration: tr.duration })), ...Array.from({ length: Math.max(0, 5 - searchResult.training_records.length) }, () => ({ date: '', training_program: '', duration: '' }))]
       : Array.from({ length: 5 }, () => ({ date: '', training_program: '', duration: '' }))
   );
-  const [ojtRecords, setOjtRecords] = useState<Array<{id?: number, product_process: string, machine_operations: string, quality_check_points: string, secondary_operations: string, handling: string, packing_labeling: string, others: string}>>(
+  const [ojtRecords, setOjtRecords] = useState<Array<{
+    id?: number;
+    product_process: string;
+    machine_operations: string;
+    quality_check_points: string;
+    secondary_operations: string;
+    handling: string;
+    packing_labeling: string;
+    others: string;
+    [key: string]: any; // <-- add this line
+  }>>(
     isEdit && searchResult && searchResult.ojt_records && searchResult.ojt_records.length > 0
       ? [...searchResult.ojt_records.slice(0, 4).map(ojt => ({ id: ojt.id, product_process: ojt.product_process, machine_operations: ojt.machine_operations, quality_check_points: ojt.quality_check_points, secondary_operations: ojt.secondary_operations, handling: ojt.handling, packing_labeling: ojt.packing_labeling, others: ojt.others })), ...Array.from({ length: Math.max(1, 4 - searchResult.ojt_records.length) }, () => ({ product_process: '', machine_operations: '', quality_check_points: '', secondary_operations: '', handling: '', packing_labeling: '', others: '' }))]
       : Array.from({ length: 1 }, () => ({ product_process: '', machine_operations: '', quality_check_points: '', secondary_operations: '', handling: '', packing_labeling: '', others: '' }))
@@ -1075,7 +1090,7 @@ const EmployeeForm = React.memo(function EmployeeForm({
                   </tr>
                 </thead>
                 <tbody>
-                  {ojtRecords.map((rec, index) => (
+                  {ojtRecords.map((rec: any, index) => (
                     <tr key={index}>
                       <td className="border border-gray-300 p-2">
                         <Input
@@ -1094,14 +1109,14 @@ const EmployeeForm = React.memo(function EmployeeForm({
                           <label className="flex items-center space-x-2">
                             <input
                               type="checkbox"
-                              checked={String(rec[field as keyof typeof rec]) === "signed"}
+                              checked={String(rec[field]) === "signed"}
                               onChange={e => {
                                 const newRecords = [...ojtRecords];
-                                newRecords[index][field as keyof typeof rec] = e.target.checked ? "signed" : "";
+                                newRecords[index][field] = e.target.checked ? "signed" : "";
                                 setOjtRecords(newRecords);
                               }}
                             />
-                            <span>{String(rec[field as keyof typeof rec]) === "signed" ? "signed" : "sign"}</span>
+                            <span>{String(rec[field]) === "signed" ? "signed" : "sign"}</span>
                           </label>
                         </td>
                       ))}
@@ -1278,7 +1293,17 @@ export default function TrainingDashboard() {
   const [trainingRecords, setTrainingRecords] = useState<Array<{id?: number, date: string, training_program: string, duration: string}>>(
     Array.from({ length: 5 }, () => ({ date: '', training_program: '', duration: '' }))
   );
-  const [ojtRecords, setOjtRecords] = useState<Array<{id?: number, product_process: string, machine_operations: string, quality_check_points: string, secondary_operations: string, handling: string, packing_labeling: string, others: string}>>(
+  const [ojtRecords, setOjtRecords] = useState<Array<{
+    id?: number;
+    product_process: string;
+    machine_operations: string;
+    quality_check_points: string;
+    secondary_operations: string;
+    handling: string;
+    packing_labeling: string;
+    others: string;
+    [key: string]: any; // <-- add this line
+  }>>(
     Array.from({ length: 1 }, () => ({ product_process: '', machine_operations: '', quality_check_points: '', secondary_operations: '', handling: '', packing_labeling: '', others: '' }))
   );
   const fileInputRef = useRef<HTMLInputElement | null>(null)
@@ -2105,15 +2130,18 @@ export default function TrainingDashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {searchResult.training_modules?.map((tm) => (
-                        <tr key={tm.id ?? tm.module.id}>
-                          <td className="border border-gray-300 p-2">{tm.module.s_no}</td>
-                          <td className="border border-gray-300 p-2">{tm.module.title}</td>
-                          <td className="border border-gray-300 p-2">{tm.module.expert}</td>
-                          <td className="border border-gray-300 p-2">{tm.status}</td>
-                          <td className="border border-gray-300 p-2">{tm.completed_date || '-'}</td>
-                        </tr>
-                      ))}
+                      {searchResult.training_modules
+                        ?.slice()
+                        .sort((a, b) => a.module.s_no - b.module.s_no)
+                        .map((tm) => (
+                          <tr key={tm.id ?? tm.module.id}>
+                            <td className="border border-gray-300 p-2">{tm.module.s_no}</td>
+                            <td className="border border-gray-300 p-2">{tm.module.title}</td>
+                            <td className="border border-gray-300 p-2">{tm.module.expert}</td>
+                            <td className="border border-gray-300 p-2">{tm.status}</td>
+                            <td className="border border-gray-300 p-2">{tm.completed_date || '-'}</td>
+                          </tr>
+                        ))}
                     </tbody>
                   </table>
                 </div>
@@ -2135,7 +2163,7 @@ export default function TrainingDashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {searchResult.training_records?.map((tr: Record<string, any>) => (
+                      {searchResult.training_records?.map((tr: any) => (
                         <tr key={tr.id}>
                           <td className="border border-gray-300 p-2">{tr.date}</td>
                           <td className="border border-gray-300 p-2">{tr.training_program}</td>
@@ -2169,7 +2197,7 @@ export default function TrainingDashboard() {
                     <tbody>
                       {ojtRecords
                         ?.filter(
-                          (ojt: Record<string, any>) =>
+                          (ojt: any) =>
                             ojt.product_process ||
                             ojt.machine_operations === "signed" ||
                             ojt.quality_check_points === "signed" ||
@@ -2178,15 +2206,15 @@ export default function TrainingDashboard() {
                             ojt.packing_labeling === "signed" ||
                             ojt.others === "signed"
                         )
-                        .map((ojt: Record<string, any>, idx: number) => (
-                          <tr key={ojt.id ?? idx}>
-                            <td className="border border-gray-300 p-2">{ojt.product_process}</td>
-                            <td className="border border-gray-300 p-2">{ojt.machine_operations === "signed" ? "signed" : ""}</td>
-                            <td className="border border-gray-300 p-2">{ojt.quality_check_points === "signed" ? "signed" : ""}</td>
-                            <td className="border border-gray-300 p-2">{ojt.secondary_operations === "signed" ? "signed" : ""}</td>
-                            <td className="border border-gray-300 p-2">{ojt.handling === "signed" ? "signed" : ""}</td>
-                            <td className="border border-gray-300 p-2">{ojt.packing_labeling === "signed" ? "signed" : ""}</td>
-                            <td className="border border-gray-300 p-2">{ojt.others === "signed" ? "signed" : ""}</td>
+                        .map((rec: any, idx: number) => (
+                          <tr key={rec.id ?? idx}>
+                            <td className="border border-gray-300 p-2">{rec.product_process}</td>
+                            <td className="border border-gray-300 p-2">{rec.machine_operations === "signed" ? "signed" : ""}</td>
+                            <td className="border border-gray-300 p-2">{rec.quality_check_points === "signed" ? "signed" : ""}</td>
+                            <td className="border border-gray-300 p-2">{rec.secondary_operations === "signed" ? "signed" : ""}</td>
+                            <td className="border border-gray-300 p-2">{rec.handling === "signed" ? "signed" : ""}</td>
+                            <td className="border border-gray-300 p-2">{rec.packing_labeling === "signed" ? "signed" : ""}</td>
+                            <td className="border border-gray-300 p-2">{rec.others === "signed" ? "signed" : ""}</td>
                           </tr>
                         ))}
                     </tbody>
@@ -2233,10 +2261,11 @@ export default function TrainingDashboard() {
                             { label: 'MSA TEST', value: latest.msa_test },
                             { label: 'Deflashing', value: latest.deflashing },
                             { label: 'Basic Total', value: latest.basic_skills_total },
-                            { label: 'Advanced Total', value: latest.advanced_skills_total },
-                            { label: 'Overall Score', value: latest.overall_score },
-                            { label: 'Created At', value: latest.created_at ? latest.created_at.split('T')[0] : '-' },
-                            { label: 'Updated At', value: latest.updated_at ? latest.updated_at.split('T')[0] : '-' },
+                            // Only show these if present
+                            ...(typeof latest.advanced_skills_total !== 'undefined' ? [{ label: 'Advanced Total', value: latest.advanced_skills_total }] : []),
+                            ...(typeof latest.overall_score !== 'undefined' ? [{ label: 'Overall Score', value: latest.overall_score }] : []),
+                            ...(typeof latest.created_at !== 'undefined' ? [{ label: 'Created At', value: latest.created_at ? latest.created_at.split('T')[0] : '-' }] : []),
+                            ...(typeof latest.updated_at !== 'undefined' ? [{ label: 'Updated At', value: latest.updated_at ? latest.updated_at.split('T')[0] : '-' }] : []),
                           ];
                           return fields.map((f, idx) => (
                             <tr key={idx}>
